@@ -42,8 +42,10 @@ $domain_netbios_name = Get-AnsibleParam $parsed_args "domain_netbios_name"
 $safe_mode_admin_password = Get-AnsibleParam $parsed_args "safe_mode_password" -failifempty $true
 $database_path = Get-AnsibleParam $parsed_args "database_path" -type "path"
 $sysvol_path = Get-AnsibleParam $parsed_args "sysvol_path" -type "path"
+$restart_netlogon = Get-AnsibleParam $parsed_args "restart_netlogon" -type "bool" -default $true
 
 $forest = $null
+$netlogon = $null
 
 # FUTURE: support down to Server 2012?
 If([System.Environment]::OSVersion.Version -lt [Version]"6.3.9600.0") {
@@ -88,6 +90,16 @@ If(-not $forest) {
         $iaf = Install-ADDSForest @install_forest_args
 
         $result.reboot_required = $iaf.RebootRequired
+        
+        if ($restart_netlogon) {
+            try {
+               $netlogon = Get-Service -Name Netlogon -ErrorAction SilentlyContinue
+            }
+            catch { }
+            if ($netlogon.Status -ne "started") {
+                $rnl = Start-Service -Name Netlogon
+            }
+        }
     }
 }
 
