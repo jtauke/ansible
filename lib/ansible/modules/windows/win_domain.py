@@ -42,6 +42,11 @@ options:
       Sysvol file will be created.
     - If not set then the default path is C(%SYSTEMROOT%\SYSVOL).
     version_added: '2.5'
+  restart_netlogon:
+    description:
+    - When set to true, restart the netlogon service folllowing the creation of the domain
+    - If not set, the default is true
+    version_added: '2.6'
 author:
     - Matt Davis (@nitzmahone)
 '''
